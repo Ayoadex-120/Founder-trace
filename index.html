@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FounderTrace">
+<title>FounderTrace Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;--bg2:#111;--sur:#161616;--bdr:#222;--bdr2:#2e2e2e;
+  --ink:#f0ede8;--mt:#555;--mt2:#888;
+  --acc:#e8420a;--acc2:#ff5a1f;
+  --grn:#22c55e;--ylw:#fbbf24;--blu:#60a5fa;--pur:#a78bfa;--red:#f87171;
+  --sw:210px;--r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;}
+
+
+
+/* ── SIDEBAR ── */
+#sb{width:var(--sw);min-width:var(--sw);background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;height:100vh;flex-shrink:0;}
+.sb-top{padding:20px 16px 16px;border-bottom:1px solid var(--bdr);}
+.sb-top h1{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;}
+.sb-top h1 span{color:var(--acc);}
+.sb-top p{font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;letter-spacing:1px;margin-top:1px;}
+.sb-prof{padding:12px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .15s;}
+.sb-prof:hover{background:var(--sur);}
+.av{width:28px;height:28px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.pn{font-size:13px;font-weight:600;}
+.pt{font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;}
+.sb-nav{flex:1;padding:9px 8px;overflow-y:auto;}
+.nl{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .15s;color:var(--mt2);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;margin-bottom:1px;}
+.nl:hover{background:var(--sur);color:var(--ink);}
+.nl.active{background:rgba(232,66,10,.12);color:var(--acc);}
+.ni{font-size:15px;width:19px;text-align:center;flex-shrink:0;}
+.nb2{margin-left:auto;background:var(--acc);color:#fff;border-radius:9px;padding:1px 6px;font-size:10px;font-weight:700;}
+.sb-bot{padding:9px 8px;border-top:1px solid var(--bdr);}
+.apst{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:7px;font-size:11px;color:var(--mt2);}
+.apst.ok{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12);}
+.apst.no{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.12);color:var(--red);}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dot.grn{background:var(--grn);box-shadow:0 0 5px var(--grn);animation:bl 2s infinite;}
+.dot.red{background:var(--red);}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MAIN ── */
+#main{flex:1;overflow-y:auto;height:100vh;}
+.page{display:none;padding:24px 28px 44px;max-width:960px;}
+.page.active{display:block;}
+
+/* ── MOBILE NAV ── */
+#mn{display:none;position:fixed;bottom:0;left:0;right:0;height:54px;background:#111;border-top:1px solid var(--bdr);z-index:100;}
+.mni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--mt);font-family:'DM Sans',sans-serif;font-size:9px;font-weight:500;letter-spacing:.3px;text-transform:uppercase;cursor:pointer;transition:color .15s;}
+.mni.active{color:var(--acc);}
+.mic{font-size:17px;}
+#mn>.mw{display:flex;height:100%;}
+
+/* ── TOASTS ── */
+#ts{position:fixed;top:14px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:300px;}
+.t{display:flex;align-items:flex-start;gap:9px;background:#1a1a1a;border:1px solid var(--bdr2);border-radius:9px;padding:11px 13px;pointer-events:all;box-shadow:0 8px 24px rgba(0,0,0,.6);animation:ti .3s cubic-bezier(.34,1.56,.64,1) forwards;position:relative;overflow:hidden;border-left:3px solid var(--mt);}
+.t.success{border-left-color:var(--grn);}
+.t.error{border-left-color:var(--red);}
+.t.warning{border-left-color:var(--ylw);}
+.t.info{border-left-color:var(--blu);}
+.t.copy{border-left-color:var(--acc);}
+.t.out{animation:to .22s ease forwards;}
+@keyframes ti{from{opacity:0;transform:translateX(110%) scale(.88)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes to{from{opacity:1}to{opacity:0;transform:translateX(110%)}}
+.tb{position:absolute;bottom:0;left:0;height:2px;background:rgba(255,255,255,.1);animation:tbr linear forwards;}
+@keyframes tbr{from{width:100%}to{width:0}}
+.ti2{font-size:15px;flex-shrink:0;margin-top:1px;}
+.td2{flex:1;}
+.ttl{font-size:12px;font-weight:700;margin-bottom:1px;}
+.tmg{font-size:11px;color:var(--mt2);line-height:1.5;}
+.tx{background:none;border:none;color:var(--mt);cursor:pointer;font-size:13px;padding:0;flex-shrink:0;}
+
+/* ── COMMON ── */
+.ph{margin-bottom:20px;}
+.ph-t{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1.5px;line-height:1;}
+.ph-t span{color:var(--acc);}
+.ph-s{font-size:11px;color:var(--mt);font-family:'DM Mono',monospace;letter-spacing:1px;margin-top:3px;}
+.ph-r{display:flex;align-items:flex-end;justify-content:space-between;}
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:17px;margin-bottom:11px;}
+.sl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mt);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.sl::after{content:'';flex:1;height:1px;background:var(--bdr);}
+label{font-size:11px;font-weight:600;color:var(--mt);letter-spacing:1px;text-transform:uppercase;}
+input,select,textarea{background:var(--bg2);border:1px solid var(--bdr2);border-radius:7px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 11px;outline:none;width:100%;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);}
+input::placeholder,textarea::placeholder{color:var(--mt);}
+select option{background:var(--sur);}
+textarea{resize:vertical;min-height:68px;}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.s2{grid-column:span 2;}
+.s3{grid-column:span 3;}
+.tag{background:var(--bg2);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;color:var(--mt);cursor:pointer;user-select:none;transition:all .15s;}
+.tag:hover{border-color:var(--bdr2);color:var(--ink);}
+.tag.on{background:var(--acc);color:#fff;border-color:var(--acc);}
+.tr{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.tl{font-size:11px;font-weight:600;color:var(--mt);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+.btn{border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.bp{background:var(--acc);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;padding:10px 26px;}
+.bp:hover{background:var(--acc2);transform:translateY(-1px);}
+.bp:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.bg2b{background:transparent;color:var(--ink);border:1px solid var(--bdr2);font-size:12px;padding:6px 11px;}
+.bg2b:hover{border-color:var(--ink);}
+.bsm{padding:5px 10px;font-size:11px;}
+.bda{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25);font-size:12px;padding:5px 10px;}
+.bda:hover{background:rgba(248,113,113,.2);}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:3px 8px;border-radius:20px;border:1px solid;}
+.bg{color:var(--grn);border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.07);}
+.by{color:var(--ylw);border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.07);}
+.br{color:var(--red);border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.07);}
+.bb{color:var(--blu);border-color:rgba(96,165,250,.25);background:rgba(96,165,250,.07);}
+.bp2{color:var(--pur);border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.07);}
+.bm{color:var(--mt);border-color:var(--bdr);}
+.empty{text-align:center;padding:48px 16px;color:var(--mt);display:none;}
+.empty.show{display:block;}
+.eic{font-size:34px;opacity:.2;margin-bottom:10px;}
+.empty h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:5px;color:var(--mt2);}
+.empty p{font-size:13px;line-height:1.7;}
+.sp{width:13px;height:13px;border:2px solid var(--bdr2);border-top-color:var(--acc);border-radius:50%;animation:spin .65s linear infinite;display:none;}
+.sp.on{display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.note{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.15);border-radius:7px;padding:10px 13px;font-size:12px;color:var(--mt2);margin-bottom:15px;line-height:1.7;}
+.note strong{color:var(--ylw);}
+.note.red{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.2);}
+.note.red strong{color:var(--red);}
+
+/* ── API KEY GATE ── */
+#apiGate{display:none;background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:11px;padding:20px;margin-bottom:18px;}
+#apiGate.show{display:block;}
+#apiGate h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--red);margin-bottom:8px;}
+#apiGate p{font-size:13px;color:var(--mt2);line-height:1.7;margin-bottom:14px;}
+.api-row{display:flex;gap:9px;}
+.api-row input{flex:1;font-family:'DM Mono',monospace;font-size:13px;}
+
+/* ── SEARCH PAGE ── */
+.spanel{background:var(--sur);border:1px solid var(--bdr);border-radius:13px;padding:20px;margin-bottom:16px;}
+.arow{display:flex;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap;}
+.sst{font-size:11px;color:var(--mt);font-family:'DM Mono',monospace;}
+.rc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px 18px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;transition:border-color .15s;animation:su .28s ease forwards;opacity:0;}
+.rc:hover{border-color:var(--bdr2);}
+@keyframes su{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.rname{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.4px;margin-bottom:2px;}
+.rrole{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.7px;margin-bottom:1px;}
+.rco{font-size:12px;color:var(--mt2);margin-bottom:9px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 9px;border-radius:5px;background:var(--bg2);border:1px solid var(--bdr);color:var(--ink);font-family:'DM Mono',monospace;transition:all .15s;}
+.chip.e{color:var(--grn);background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.2);cursor:pointer;}
+.chip.e:hover{background:rgba(34,197,94,.12);}
+.chip a{color:inherit;text-decoration:none;}
+.cr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.rb{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--bdr);}
+.rt2{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;}
+.rt2 span{color:var(--acc);}
+.pag{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;}
+.pgb{background:var(--sur);border:1px solid var(--bdr2);color:var(--ink);border-radius:6px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.pgb:hover:not(:disabled){border-color:var(--ink);}
+.pgb:disabled{opacity:.3;cursor:not-allowed;}
+
+/* ── HISTORY ── */
+.hc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;}
+.hc:hover{border-color:var(--bdr2);}
+.hi{flex:1;min-width:0;}
+.hq{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hm{font-size:11px;color:var(--mt);margin-top:1px;font-family:'DM Mono',monospace;}
+.hdel{background:none;border:none;color:var(--mt);cursor:pointer;font-size:14px;padding:4px;transition:color .15s;}
+.hdel:hover{color:var(--red);}
+
+/* ── DASHBOARD ── */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;}
+.sc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;text-align:center;}
+.sn{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;line-height:1;margin-bottom:2px;}
+.sl2{font-size:10px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.8px;}
+.bc{display:flex;align-items:flex-end;gap:6px;height:82px;padding-bottom:18px;position:relative;}
+.bc::after{content:'';position:absolute;bottom:16px;left:0;right:0;height:1px;background:var(--bdr);}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bar{width:100%;border-radius:3px 3px 0 0;background:var(--acc);opacity:.6;min-height:3px;transition:opacity .2s;}
+.bar:hover{opacity:1;}
+.blbl{font-size:9px;color:var(--mt);font-family:'DM Mono',monospace;}
+.irow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr);}
+.irow:last-child{border-bottom:none;}
+.inm{flex:1;font-size:13px;}
+.ibw{width:88px;height:4px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.ib2{height:100%;background:var(--acc);border-radius:3px;}
+.ic{font-size:11px;color:var(--mt);font-family:'DM Mono',monospace;width:22px;text-align:right;}
+
+/* ── TRACKER ── */
+.tb3{display:flex;align-items:center;gap:8px;margin-bottom:15px;flex-wrap:wrap;}
+.tb3 input{flex:1;min-width:130px;}
+.lcard{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 16px;margin-bottom:8px;transition:border-color .15s;}
+.lcard:hover{border-color:var(--bdr2);}
+.ltop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.ln{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.4px;}
+.lr2{font-size:11px;color:var(--acc);font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+.lco{font-size:12px;color:var(--mt2);}
+.lacts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.ssel{background:var(--bg2);border:1px solid var(--bdr2);border-radius:5px;color:var(--ink);font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;padding:3px 8px;outline:none;cursor:pointer;text-transform:uppercase;letter-spacing:.4px;}
+.lnote{width:100%;background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;outline:none;margin-top:8px;resize:none;height:48px;transition:border-color .15s;}
+.lnote:focus{border-color:var(--acc);}
+.apanel{background:var(--sur);border:1px dashed var(--bdr2);border-radius:13px;padding:17px;margin-bottom:15px;}
+.atog{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px;user-select:none;}
+.atog .arr{transition:transform .2s;font-size:11px;color:var(--mt);}
+.atog.open .arr{transform:rotate(180deg);}
+.aform{display:none;margin-top:13px;}
+.aform.show{display:block;}
+
+/* ── EMAIL AI ── */
+.tgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:16px;}
+.tc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:13px;cursor:pointer;transition:all .15s;}
+.tc:hover{border-color:var(--acc);}
+.tc.sel{border-color:var(--acc);background:rgba(232,66,10,.06);}
+.tic3{font-size:20px;margin-bottom:6px;}
+.tn{font-weight:700;font-size:12px;margin-bottom:2px;}
+.td3{font-size:11px;color:var(--mt);line-height:1.5;}
+.eout{background:var(--bg2);border:1px solid var(--bdr2);border-radius:9px;padding:16px;margin-top:15px;display:none;animation:fu .28s ease;}
+.eout.show{display:block;}
+@keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.esubj{font-family:'DM Mono',monospace;font-size:12px;color:var(--mt);margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid var(--bdr);}
+.esubj span{color:var(--ink);font-weight:500;}
+.ebody{font-size:13px;line-height:1.85;white-space:pre-wrap;}
+.eacts{display:flex;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid var(--bdr);flex-wrap:wrap;}
+
+/* ── SETTINGS ── */
+.ss2{margin-bottom:24px;}
+.ss2 h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;margin-bottom:12px;color:var(--mt2);}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);}
+.srow:last-child{border-bottom:none;}
+.si strong{font-size:13px;font-weight:600;display:block;}
+.si span{font-size:11px;color:var(--mt2);}
+.tog{position:relative;width:38px;height:21px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.ttrack{position:absolute;inset:0;background:var(--bdr2);border-radius:11px;cursor:pointer;transition:background .2s;}
+.tog input:checked+.ttrack{background:var(--acc);}
+.tthumb{position:absolute;top:3px;left:3px;width:15px;height:15px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none;}
+.tog input:checked~.tthumb{transform:translateX(17px);}
+.spick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.sopt{background:var(--bg2);border:1px solid var(--bdr2);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .15s;color:var(--mt2);}
+.sopt:hover{color:var(--ink);}
+.sopt.sel{border-color:var(--acc);color:var(--acc);background:rgba(232,66,10,.07);}
+.plist{margin-bottom:10px;}
+.pitem{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--sur);border:1px solid var(--bdr);border-radius:7px;margin-bottom:7px;}
+.pav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.pni2{flex:1;}
+.pnm{font-size:13px;font-weight:600;}
+.ptg{font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;}
+
+
+/* ── INSTALL BANNER ── */
+#ibnr{display:none;background:rgba(232,66,10,.07);border:1px solid rgba(232,66,10,.16);border-radius:9px;padding:10px 14px;margin-bottom:15px;align-items:center;gap:10px;}
+#ibnr.show{display:flex;}
+.ibt{flex:1;}
+.ibt strong{font-size:13px;display:block;margin-bottom:1px;}
+.ibt span{font-size:11px;color:var(--mt2);}
+
+@media(max-width:768px){
+  #sb{display:none;}
+  #mn{display:flex;}
+  body{padding-bottom:54px;}
+  #main{height:calc(100vh - 54px);}
+  .page{padding:15px 14px 28px;}
+  .g2,.g3{grid-template-columns:1fr;}
+  .s2,.s3{grid-column:1;}
+  .sg{grid-template-columns:1fr 1fr;}
+  .tgrid{grid-template-columns:1fr;}
+  .rc{grid-template-columns:1fr;}
+  .cr{flex-direction:row;flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOASTS -->
+<div id="ts"></div>
+
+<!-- SIDEBAR -->
+<div id="sb">
+  <div class="sb-top"><h1>Founder<span>Trace</span> Pro</h1><p>// APOLLO DIRECT · FAST SEARCH</p></div>
+  <div class="sb-prof" onclick="goPage('settings')">
+    <div class="av" id="sav">FT</div>
+    <div><div class="pn" id="snm">My Account</div><div class="pt" id="stg">Click to manage</div></div>
+  </div>
+  <nav class="sb-nav">
+    <button class="nl active" data-pg="search" onclick="goPage('search',this)"><span class="ni">🔍</span>Search</button>
+    <button class="nl" data-pg="history" onclick="goPage('history',this)"><span class="ni">🕐</span>Search History</button>
+    <button class="nl" data-pg="dash" onclick="goPage('dash',this)"><span class="ni">📊</span>Stats Dashboard</button>
+    <button class="nl" data-pg="tracker" onclick="goPage('tracker',this)"><span class="ni">📋</span>Lead Tracker <span class="nb2" id="sbc" style="display:none">0</span></button>
+    <button class="nl" data-pg="email" onclick="goPage('email',this)"><span class="ni">✉️</span>AI Email Generator</button>
+    <button class="nl" data-pg="settings" onclick="goPage('settings',this)"><span class="ni">⚙️</span>Settings</button>
+  </nav>
+  <div class="sb-bot"><div class="apst" id="apStat"><div class="dot red" id="apDot"></div><span id="apTxt">No API Key</span></div></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+<div style="max-width:960px;padding:16px 28px 0;">
+  <div id="ibnr"><div>📲</div><div class="ibt"><strong>Install FounderTrace Pro</strong><span>Add to home screen for offline access</span></div><button class="btn bp" style="font-size:13px;padding:7px 13px;" id="ibtn">Install</button><button class="btn bg2b bsm" onclick="dismissI()">✕</button></div>
+</div>
+
+<!-- PAGE: SEARCH -->
+<div class="page active" id="pg-search">
+  <div class="ph"><div class="ph-t">Search <span>Founders</span></div><div class="ph-s">// DIRECT APOLLO API · FAST · 275M+ CONTACTS</div></div>
+
+  <div id="apiGate">
+    <h3>🔑 Apollo API Key Required</h3>
+    <p>To search founders, add your Apollo API key in Settings. Your key is stored locally on this device — anyone you share this file with will use the same key automatically.</p>
+    <div style="display:flex;gap:9px;margin-top:10px;">
+      <button class="btn bp" onclick="goPage('settings')">Go to Settings →</button>
+      <a href="https://developer.apollo.io/" target="_blank" class="btn bg2b">Get Apollo Key ↗</a>
+    </div>
+  </div>
+
+  <div id="searchContent">
+    <div class="note"><strong>⚡ Free Plan:</strong> People Search is free. Email reveal costs Apollo export credits. You get name, title, company, LinkedIn & location free.</div>
+    <div class="spanel">
+      <div class="sl">Filters</div>
+      <div class="g3" style="margin-bottom:13px;">
+        <div class="fg s2"><label>Industry / Keywords</label><input id="s-ind" placeholder="e.g. SaaS, Fintech, E-commerce..."></div>
+        <div class="fg"><label>Location</label><input id="s-loc" placeholder="e.g. Nigeria, United States..."></div>
+      </div>
+      <div class="tl">Role</div>
+      <div class="tr" id="roleTags">
+        <div class="tag on" data-v="Founder">Founder</div><div class="tag on" data-v="Co-founder">Co-Founder</div>
+        <div class="tag on" data-v="CEO">CEO</div><div class="tag" data-v="Managing Director">MD</div>
+        <div class="tag" data-v="Owner">Owner</div><div class="tag" data-v="CTO">CTO</div><div class="tag" data-v="President">President</div>
+      </div>
+      <div class="tl">Company Size</div>
+      <div class="tr" id="sizeTags">
+        <div class="tag on" data-v="1,10">1–10</div><div class="tag on" data-v="11,50">11–50</div>
+        <div class="tag" data-v="51,200">51–200</div><div class="tag" data-v="201,500">201–500</div><div class="tag" data-v="501,1000">500+</div>
+      </div>
+      <div class="arow">
+        <button class="btn bp" id="sbtn" onclick="doSearch(1)">⚡ Search Apollo</button>
+        <div class="sp" id="ssp"></div>
+        <span class="sst" id="sst"></span>
+      </div>
+    </div>
+    <div id="rw" style="display:none;">
+      <div class="rb"><div class="rt2">Results <span id="tc"></span></div><button class="btn bg2b bsm" onclick="exportCSV()">↓ CSV</button></div>
+      <div id="rl"></div>
+      <div class="pag" id="pag" style="display:none;">
+        <button class="pgb" id="pb" onclick="doSearch(cp-1)" disabled>← Prev</button>
+        <span style="font-size:11px;color:var(--mt);font-family:'DM Mono',monospace;" id="pi"></span>
+        <button class="pgb" id="nb" onclick="doSearch(cp+1)">Next →</button>
+      </div>
+    </div>
+    <div class="empty" id="se"><div class="eic">🔍</div><h3>No Results</h3><p>Try different keywords or broader filters.</p></div>
+  </div>
+</div>
+
+<!-- PAGE: HISTORY -->
+<div class="page" id="pg-history">
+  <div class="ph ph-r"><div><div class="ph-t">Search <span>History</span></div><div class="ph-s">// CLICK ANY ROW TO RELOAD</div></div><button class="btn bg2b bsm" onclick="clearHist()">Clear All</button></div>
+  <div id="hl"></div>
+  <div class="empty" id="he"><div class="eic">🕐</div><h3>No History</h3><p>Run a search to get started.</p></div>
+</div>
+
+<!-- PAGE: DASHBOARD -->
+<div class="page" id="pg-dash">
+  <div class="ph ph-r"><div><div class="ph-t">Stats <span>Dashboard</span></div><div class="ph-s">// YOUR SOURCING PERFORMANCE</div></div><button class="btn bg2b bsm" onclick="renderDash();toast('info','Refreshed','',1600)">↻</button></div>
+  <div class="sg" id="sg"></div>
+  <div class="card" style="margin-bottom:14px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;margin-bottom:10px;color:var(--mt2);">Results Per Search — Last 7</div><div class="bc" id="bc"></div></div>
+  <div class="card"><div class="sl">Top Industries Searched</div><div id="ib2"></div></div>
+</div>
+
+<!-- PAGE: TRACKER -->
+<div class="page" id="pg-tracker">
+  <div class="ph ph-r"><div><div class="ph-t">Lead <span>Tracker</span></div><div class="ph-s">// MANAGE YOUR OUTREACH</div></div><span style="font-size:11px;color:var(--mt);font-family:'DM Mono',monospace;" id="tcc"></span></div>
+  <div class="apanel">
+    <div class="atog" id="atog" onclick="togAdd()"><span>➕</span> Add Lead Manually <span class="arr">▼</span></div>
+    <div class="aform" id="af">
+      <div class="g2" style="margin-bottom:11px;">
+        <div class="fg"><label>Full Name</label><input id="aln" placeholder="Jane Smith"></div>
+        <div class="fg"><label>Role</label><input id="alr" placeholder="Founder & CEO"></div>
+        <div class="fg"><label>Company</label><input id="alc" placeholder="Acme Inc."></div>
+        <div class="fg"><label>Email</label><input id="ale" placeholder="jane@acme.com"></div>
+      </div>
+      <button class="btn bp" onclick="addLead()">Add Lead</button>
+    </div>
+  </div>
+  <div class="tb3"><input id="tq" placeholder="🔍  Search leads..." oninput="renderTracker()"><select id="tf" onchange="renderTracker()" style="width:auto;padding:8px 10px;"><option value="">All Statuses</option><option value="not-contacted">Not Contacted</option><option value="contacted">Contacted</option><option value="replied">Replied</option><option value="meeting">Meeting Booked</option><option value="closed">Closed Won</option><option value="not-interested">Not Interested</option></select></div>
+  <div id="tl"></div>
+  <div class="empty" id="te"><div class="eic">📋</div><h3>No Leads Yet</h3><p>Save founders from search results<br>or add them manually above.</p></div>
+</div>
+
+<!-- PAGE: EMAIL AI -->
+<div class="page" id="pg-email">
+  <div class="ph"><div class="ph-t">AI Email <span>Generator</span></div><div class="ph-s">// PERSONALISED COLD OUTREACH IN SECONDS</div></div>
+  <div class="tgrid">
+    <div class="tc sel" data-t="partnership" onclick="selT(this)"><div class="tic3">🤝</div><div class="tn">Partnership</div><div class="td3">Propose a collaboration or joint opportunity</div></div>
+    <div class="tc" data-t="service" onclick="selT(this)"><div class="tic3">💼</div><div class="tn">Sell a Service</div><div class="td3">Pitch your product or service offering</div></div>
+    <div class="tc" data-t="investor" onclick="selT(this)"><div class="tic3">💰</div><div class="tn">Investment</div><div class="td3">Reach out as an investor or for funding</div></div>
+    <div class="tc" data-t="intro" onclick="selT(this)"><div class="tic3">👋</div><div class="tn">Cold Intro</div><div class="td3">Warm introduction to start a relationship</div></div>
+  </div>
+  <div class="card">
+    <div class="sl">Email Details</div>
+    <div class="g2" style="margin-bottom:13px;">
+      <div class="fg"><label>Recipient Name</label><input id="en" placeholder="Jane Smith"></div>
+      <div class="fg"><label>Their Company</label><input id="ec" placeholder="Acme Inc."></div>
+      <div class="fg"><label>Their Role</label><input id="er" placeholder="Founder & CEO"></div>
+      <div class="fg"><label>Your Name / Company</label><input id="es" placeholder="Your Name, YourCo"></div>
+      <div class="fg s2"><label>What do you want? <span style="color:var(--mt);text-transform:none;font-weight:400;">(be specific)</span></label><textarea id="eg" placeholder="e.g. Propose white-label integration of our payment API. 60-day free trial + revenue share."></textarea></div>
+    </div>
+    <div class="tl">Tone</div>
+    <div class="tr" id="toneTags">
+      <div class="tag on" data-v="Professional">Professional</div>
+      <div class="tag" data-v="Friendly and casual">Friendly</div>
+      <div class="tag" data-v="Bold and confident">Bold</div>
+      <div class="tag" data-v="Concise and direct">Concise</div>
+      <div class="tag" data-v="Warm and empathetic">Warm</div>
+    </div>
+    <button class="btn bp" id="gbtn" onclick="genEmail()">✦ Generate Email</button>
+    <div class="eout" id="eo"><div class="esubj">Subject: <span id="esub"></span></div><div class="ebody" id="ebo"></div><div class="eacts"><button class="btn bg2b bsm" onclick="cpEmail()">📋 Copy Email</button><button class="btn bg2b bsm" onclick="cpSubj()">📋 Copy Subject</button><button class="btn bg2b bsm" onclick="genEmail()">↻ Regenerate</button><button class="btn bg2b bsm" onclick="openMail()">✉ Open in Mail</button></div></div>
+  </div>
+</div>
+
+<!-- PAGE: SETTINGS -->
+<div class="page" id="pg-settings">
+  <div class="ph"><div class="ph-t">⚙️ <span>Settings</span></div><div class="ph-s">// PREFERENCES & ACCOUNT</div></div>
+
+  <!-- APOLLO API KEY -->
+  <div class="ss2">
+    <h3>Apollo API Key</h3>
+    <div class="note" style="margin-bottom:12px;">
+      <strong>🔑 One key, shared access:</strong> Paste your Apollo API key below. It's saved locally on this device. Anyone you share the app file with will automatically use this key — no separate login needed. Get your key at <a href="https://developer.apollo.io/" target="_blank" style="color:var(--acc);">developer.apollo.io</a>
+    </div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:12px;">
+        <label>Apollo API Key</label>
+        <div style="display:flex;gap:9px;">
+          <input id="apiKeyInput" type="password" placeholder="Paste your Apollo API key here..." style="flex:1;font-family:'DM Mono',monospace;font-size:13px;">
+          <button class="btn bg2b bsm" onclick="toggleKeyVis()" id="keyVisBtn">👁 Show</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;">
+        <button class="btn bp" onclick="saveApiKey()">Save Key</button>
+        <button class="btn bg2b" onclick="testApiKey()">Test Connection</button>
+        <button class="btn bda" onclick="clearApiKey()">Remove Key</button>
+      </div>
+      <div id="keyStatus" style="margin-top:10px;font-size:12px;font-family:'DM Mono',monospace;color:var(--mt);"></div>
+    </div>
+  </div>
+
+  <!-- USER PROFILES -->
+  <div class="ss2">
+    <h3>User Profiles</h3>
+    <div class="note" style="margin-bottom:11px;"><strong>👥 Multi-user:</strong> Add profiles for different team members. Each profile has its own leads, history & stats stored separately on this device.</div>
+    <div class="plist" id="pl"></div>
+    <div class="card" style="margin-bottom:10px;">
+      <div class="sl">Add New Profile</div>
+      <div class="g2" style="margin-bottom:11px;"><div class="fg"><label>Name</label><input id="npn" placeholder="e.g. Sarah"></div><div class="fg"><label>Role</label><input id="npr" placeholder="e.g. Sales Manager"></div></div>
+      <button class="btn bg2b" onclick="addProfile()">+ Add Profile</button>
+    </div>
+    <div class="card"><div style="font-weight:600;font-size:13px;margin-bottom:6px;">Switch Active Profile</div><select id="pswitch" onchange="switchProfile(this.value)" style="max-width:240px;"></select></div>
+  </div>
+
+  <!-- SOUND -->
+  <div class="ss2">
+    <h3>Notifications & Sound</h3>
+    <div class="srow"><div class="si"><strong>Sound Alerts</strong><span>Play audio with each notification</span></div><label class="tog"><input type="checkbox" id="stog" checked onchange="savePref()"><div class="ttrack"></div><div class="tthumb"></div></label></div>
+    <div class="srow"><div class="si"><strong>Alert Sound</strong><span>Choose your sound</span><div class="spick" id="spick"><div class="sopt sel" data-s="pop" onclick="selSound(this)">🎵 Pop</div><div class="sopt" data-s="chime" onclick="selSound(this)">🔔 Chime</div><div class="sopt" data-s="click" onclick="selSound(this)">🖱 Click</div><div class="sopt" data-s="ping" onclick="selSound(this)">📡 Ping</div><div class="sopt" data-s="none" onclick="selSound(this)">🔇 None</div></div></div></div>
+    <div class="srow"><div class="si"><strong>Volume</strong></div><input type="range" min="0" max="1" step="0.1" value="0.5" id="vol" oninput="savePref()" style="width:100px;background:none;border:none;padding:0;accent-color:var(--acc);"></div>
+  </div>
+
+  <!-- DATA -->
+  <div class="ss2">
+    <h3>Data</h3>
+    <div class="srow"><div class="si"><strong>Export All Data</strong><span>Download leads & history as JSON</span></div><button class="btn bg2b bsm" onclick="exportAll()">↓ Export</button></div>
+    <div class="srow"><div class="si"><strong>Clear All Data</strong><span>Delete everything (cannot be undone)</span></div><button class="btn bda bsm" onclick="clearAll()">🗑 Clear All</button></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MOBILE NAV -->
+<nav id="mn">
+  <div class="mw">
+    <button class="mni active" data-pg="search" onclick="goPage('search',this)"><span class="mic">🔍</span>Search</button>
+    <button class="mni" data-pg="history" onclick="goPage('history',this)"><span class="mic">🕐</span>History</button>
+    <button class="mni" data-pg="dash" onclick="goPage('dash',this)"><span class="mic">📊</span>Stats</button>
+    <button class="mni" data-pg="tracker" onclick="goPage('tracker',this)"><span class="mic">📋</span>Tracker</button>
+    <button class="mni" data-pg="email" onclick="goPage('email',this)"><span class="mic">✉️</span>Email</button>
+    <button class="mni" data-pg="settings" onclick="goPage('settings',this)"><span class="mic">⚙️</span>Settings</button>
+  </div>
+</nav>
+
+<script>
+/* ─── STORAGE ─── */
+function cpk(k){return`ft_${acp()}_${k}`;}
+function acp(){return localStorage.getItem('ft_ap')||'default';}
+function gs(k,d){try{const v=localStorage.getItem(cpk(k));return v!==null?JSON.parse(v):d;}catch{return d;}}
+function ss(k,v){localStorage.setItem(cpk(k),JSON.stringify(v));}
+function gg(k,d){try{const v=localStorage.getItem('ftg_'+k);return v!==null?JSON.parse(v):d;}catch{return d;}}
+function sg(k,v){localStorage.setItem('ftg_'+k,JSON.stringify(v));}
+
+/* ─── APOLLO API KEY ─── */
+function getKey(){return gg('apolloKey','');}
+function hasKey(){return!!getKey();}
+
+function saveApiKey(){
+  const k=document.getElementById('apiKeyInput').value.trim();
+  if(!k){toast('warning','Key Empty','Paste your Apollo API key first.');return;}
+  sg('apolloKey',k);
+  updateKeyUI();
+  toast('success','Key Saved','Apollo API key saved. Testing connection…',2500);
+  testApiKey();
+}
+
+function clearApiKey(){
+  sg('apolloKey','');
+  document.getElementById('apiKeyInput').value='';
+  updateKeyUI();
+  toast('info','Key Removed','',2000);
+}
+
+async function testApiKey(){
+  const k=getKey();
+  if(!k){document.getElementById('keyStatus').textContent='No key saved.';return;}
+  document.getElementById('keyStatus').textContent='Testing…';
+  try{
+    // Use Apollo's people search with minimal params to test auth
+    const res=await fetch('https://api.apollo.io/api/v1/mixed_people/search',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Api-Key':k},
+      body:JSON.stringify({per_page:1,page:1,person_seniorities:['owner']})
+    });
+    if(res.ok||res.status===422){
+      document.getElementById('keyStatus').textContent='✅ Connected successfully';
+      document.getElementById('keyStatus').style.color='var(--grn)';
+      toast('success','Connected','Apollo API key is valid! 🎉',3000);
+    } else if(res.status===401){
+      document.getElementById('keyStatus').textContent='❌ Invalid key — check your Apollo API key';
+      document.getElementById('keyStatus').style.color='var(--red)';
+      toast('error','Invalid Key','Check your Apollo API key in Settings.',3500);
+    } else {
+      document.getElementById('keyStatus').textContent=`⚠ Status ${res.status} — may still work`;
+      document.getElementById('keyStatus').style.color='var(--ylw)';
+    }
+  }catch(e){
+    document.getElementById('keyStatus').textContent='⚠ Could not reach Apollo (CORS in browser — key may still work)';
+    document.getElementById('keyStatus').style.color='var(--ylw)';
+    toast('warning','CORS Notice','Direct browser calls to Apollo may be restricted — the search still works via Claude.',3500);
+  }
+  updateKeyUI();
+}
+
+function toggleKeyVis(){
+  const inp=document.getElementById('apiKeyInput');
+  const btn=document.getElementById('keyVisBtn');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈 Hide';}
+  else{inp.type='password';btn.textContent='👁 Show';}
+}
+
+function updateKeyUI(){
+  const has=hasKey();
+  const gate=document.getElementById('apiGate');
+  const content=document.getElementById('searchContent');
+  const stat=document.getElementById('apStat');
+  const dot=document.getElementById('apDot');
+  const txt=document.getElementById('apTxt');
+  gate.classList.toggle('show',!has);
+  content.style.display=has?'block':'none';
+  if(has){
+    stat.className='apst ok';dot.className='dot grn';txt.textContent='Apollo Connected';
+  } else {
+    stat.className='apst no';dot.className='dot red';txt.textContent='Add API Key';
+  }
+  if(has){
+    const k=getKey();
+    document.getElementById('apiKeyInput').value=k.slice(0,8)+'•'.repeat(Math.max(0,k.length-8));
+  }
+}
+
+/* ─── AUDIO ─── */
+let aud=null;
+function gac(){if(!aud)aud=new(window.AudioContext||window.webkitAudioContext)();return aud;}
+const SND={
+  pop:()=>{try{const c=gac(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(800,c.currentTime);o.frequency.exponentialRampToValueAtTime(380,c.currentTime+.1);g.gain.setValueAtTime(.22,c.currentTime);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+.14);o.start();o.stop(c.currentTime+.14);}catch(e){}},
+  chime:()=>{try{const c=gac();[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f;const t=c.currentTime+i*.09;g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.01,t+.26);o.start(t);o.stop(t+.26);});}catch(e){}},
+  click:()=>{try{const c=gac(),b=c.createBuffer(1,Math.round(c.sampleRate*.035),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.007));const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.connect(g);g.connect(c.destination);g.gain.value=.32;s.start();}catch(e){}},
+  ping:()=>{try{const c=gac(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=1100;g.gain.setValueAtTime(.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.36);o.start();o.stop(c.currentTime+.36);}catch(e){}},
+  none:()=>{}
+};
+function playSound(){const p=gg('prefs',{sound:true,st:'pop',vol:.5});if(!p.sound)return;(SND[p.st]||SND.pop)();}
+function selSound(el){document.querySelectorAll('.sopt').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');savePref();playSound();}
+function savePref(){sg('prefs',{sound:document.getElementById('stog')?.checked??true,st:document.querySelector('.sopt.sel')?.dataset.s||'pop',vol:parseFloat(document.getElementById('vol')?.value||.5)});}
+function loadPrefs(){const p=gg('prefs',{sound:true,st:'pop',vol:.5});const st=document.getElementById('stog');if(st)st.checked=p.sound;const vl=document.getElementById('vol');if(vl)vl.value=p.vol;document.querySelectorAll('.sopt').forEach(s=>s.classList.toggle('sel',s.dataset.s===p.st));}
+
+/* ─── TOASTS ─── */
+const TIC={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️',copy:'📋'};
+function toast(type,title,msg,dur=3600){
+  playSound();
+  const c=document.getElementById('ts'),el=document.createElement('div');
+  el.className=`t ${type}`;
+  el.innerHTML=`<div class="ti2">${TIC[type]||'ℹ️'}</div><div class="td2"><div class="ttl">${title}</div>${msg?`<div class="tmg">${msg}</div>`:''}</div><button class="tx" onclick="rmT(this.parentElement)">✕</button><div class="tb" style="animation-duration:${dur}ms;"></div>`;
+  c.appendChild(el);setTimeout(()=>rmT(el),dur);
+}
+function rmT(el){if(!el?.parentElement)return;el.classList.add('out');setTimeout(()=>el.remove(),220);}
+
+/* ─── NAV ─── */
+function goPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nl,.mni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  const t=btn||document.querySelector(`[data-pg="${id}"]`);if(t)t.classList.add('active');
+  const sl=document.querySelector(`#sb [data-pg="${id}"]`);if(sl)sl.classList.add('active');
+  document.getElementById('main').scrollTo(0,0);
+  if(id==='history')renderHist();
+  if(id==='dash')renderDash();
+  if(id==='tracker')renderTracker();
+  if(id==='settings'){loadPrefs();renderProfiles();updateKeyUI();}
+}
+
+/* ─── TAG TOGGLES ─── */
+document.querySelectorAll('#roleTags .tag,#sizeTags .tag,#toneTags .tag').forEach(t=>t.addEventListener('click',()=>t.classList.toggle('on')));
+function getA(id){return[...document.querySelectorAll(`#${id} .tag.on`)].map(t=>t.dataset.v);}
+
+/* ─── SEARCH (DIRECT APOLLO API) ─── */
+let cp=1,ar=[],tr=0;
+const PP=10;
+
+async function doSearch(page=1){
+  if(!hasKey()){toast('warning','No API Key','Add your Apollo API key in Settings.');goPage('settings');return;}
+  const ind=document.getElementById('s-ind').value.trim(),loc=document.getElementById('s-loc').value.trim();
+  const roles=getA('roleTags'),sizes=getA('sizeTags');
+  if(!ind&&!loc&&!roles.length){toast('warning','Add a Filter','Enter an industry or location.');return;}
+
+  cp=page;setLoad(true);
+  document.getElementById('rw').style.display='none';
+  document.getElementById('se').classList.remove('show');
+  document.getElementById('rl').innerHTML='';
+  setSt('Searching Apollo...');
+
+  // Build Apollo API payload directly
+  const payload={
+    page,per_page:PP,
+    person_seniorities:['owner','founder','c_suite'],
+    person_titles:roles.length?roles:['founder','ceo','owner'],
+    organization_num_employees_ranges:sizes.length?sizes:['1,10','11,50'],
+  };
+  if(ind)payload.q_keywords=ind;
+  if(loc){payload.person_locations=[loc];payload.organization_locations=[loc];}
+  if(ind)payload.q_organization_keyword_tags=[ind];
+
+  try{
+    const res=await fetch('https://api.apollo.io/api/v1/mixed_people/search',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Api-Key':getKey()},
+      body:JSON.stringify(payload)
+    });
+
+    if(res.status===401){toast('error','Invalid API Key','Check your Apollo key in Settings.',4000);setLoad(false);setSt('Auth failed.');return;}
+
+    const data=await res.json();
+    const people=data.people||[];
+    const total=data.pagination?.total_entries||people.length;
+
+    if(!people.length){
+      document.getElementById('se').classList.add('show');
+      setSt('No results found.');
+      toast('warning','No Results','Try different filters or keywords.');
+    } else {
+      ar=people;tr=total;
+      renderResults(people,total,page);
+      saveHist2({industry:ind,location:loc,roles,sizes,total,date:Date.now()});
+      toast('success','Done!',`Found ${total.toLocaleString()} founders 🎯`,3000);
+      setSt(`${total.toLocaleString()} matches`);
+      updBadge();
+    }
+  }catch(e){
+    console.error(e);
+    // CORS fallback — route through Claude
+    if(e.message&&e.message.includes('fetch')){
+      toast('info','Routing via Claude…','Direct Apollo blocked by browser — using fallback',2500);
+      await doSearchViaClaude(page,ind,loc,roles,sizes);
+    } else {
+      toast('error','Error','Could not reach Apollo. Check your key.');
+      setSt('Error.');
+    }
+  }
+  setLoad(false);
+}
+
+async function doSearchViaClaude(page,ind,loc,roles,sizes){
+  // Fallback: use Claude + Apollo MCP (slower but works when CORS blocks direct)
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        mcp_servers:[{type:'url',url:'https://mcp.apollo.io/mcp',name:'apollo-mcp'}],
+        system:`Search Apollo and return ONLY JSON: {"people":[{id,name,title,organization_name,city,state,country,linkedin_url,email,email_status,num_employees}],"total":N}. No markdown.`,
+        messages:[{role:'user',content:`Search: titles=${roles.join(',')}, keywords=${ind||'any'}, location=${loc||'global'}, sizes=${sizes.join(',')}, page=${page}, per_page=${PP}, seniorities=owner,founder,c_suite`}]
+      })
+    });
+    const data=await res.json();
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    let parsed=null;try{const m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
+    if(parsed?.people?.length){
+      ar=parsed.people;tr=parsed.total||parsed.people.length;
+      renderResults(parsed.people,tr,page);
+      saveHist2({industry:ind,location:loc,roles,sizes,total:tr,date:Date.now()});
+      toast('success','Done!',`Found ${tr.toLocaleString()} founders`,3000);
+      setSt(`${tr.toLocaleString()} matches`);
+    } else {
+      document.getElementById('se').classList.add('show');
+      setSt('No results.');
+    }
+  }catch(e){toast('error','Both methods failed','Please check your connection.',4000);}
+}
+
+function renderResults(people,total,page){
+  const list=document.getElementById('rl');
+  document.getElementById('tc').textContent=`— ${total.toLocaleString()}`;
+  list.innerHTML='';
+  people.forEach((p,i)=>{
+    const card=document.createElement('div');card.className='rc';card.style.animationDelay=`${i*.04}s`;
+    const loc=[p.city,p.state,p.country].filter(Boolean).join(', ');
+    const es=p.email_status||'unknown';
+    const eb=es==='verified'?'bg':es==='likely to engage'?'by':'bm';
+    const el2=es==='verified'?'✓ Verified':es==='likely to engage'?'~ Likely':'No Email';
+    const emp=p.num_employees||p.employment_history?.[0]?.organization_num_employees_ranges?.[0]||'':'';
+    card.innerHTML=`
+      <div>
+        <div class="rname">${esc(p.name||'Unknown')}</div>
+        <div class="rrole">${esc(p.title||'')}</div>
+        <div class="rco">${esc(p.organization_name||p.organization?.name||'')}</div>
+        <div class="chips">
+          ${p.email?`<div class="chip e" onclick="cpChip('${esc(p.email)}',this)">✉ ${esc(p.email)}</div>`:`<div class="chip" style="color:var(--mt)">✉ No email</div>`}
+          ${loc?`<div class="chip">📍 ${esc(loc)}</div>`:''}
+          ${p.linkedin_url?`<div class="chip"><a href="${esc(p.linkedin_url)}" target="_blank">in ↗</a></div>`:''}
+          ${p.num_employees?`<div class="chip">👥 ${Number(p.num_employees).toLocaleString()}</div>`:''}
+        </div>
+      </div>
+      <div class="cr">
+        ${p.email?`<span class="badge ${eb}">${el2}</span>`:''}
+        <button class="btn bg2b bsm" onclick='saveTrack(${JSON.stringify({id:p.id,name:p.name,title:p.title,organization_name:p.organization_name||p.organization?.name||"",email:p.email,linkedin_url:p.linkedin_url,city:p.city,country:p.country}).replace(/'/g,"&#39;")})'>+ Track</button>
+      </div>`;
+    list.appendChild(card);
+  });
+  const tp=Math.ceil(total/PP),pag=document.getElementById('pag');
+  if(tp>1){pag.style.display='flex';document.getElementById('pi').textContent=`Page ${page} of ${tp}`;document.getElementById('pb').disabled=page<=1;document.getElementById('nb').disabled=page>=tp;}
+  else pag.style.display='none';
+  document.getElementById('rw').style.display='block';
+}
+
+function setLoad(on){document.getElementById('ssp').classList.toggle('on',on);document.getElementById('sbtn').disabled=on;document.getElementById('sbtn').innerHTML=on?'Searching…':'⚡ Search Apollo';}
+function setSt(t){document.getElementById('sst').textContent=t;}
+function cpChip(em,el){navigator.clipboard.writeText(em).then(()=>{el.textContent='✓ Copied!';setTimeout(()=>el.textContent=`✉ ${em}`,1400);toast('copy','Email Copied',em,2200);});}
+function exportCSV(){if(!ar.length){toast('warning','Nothing to Export','Run a search first.');return;}const h=['Name','Title','Company','Email','Email Status','City','State','Country','LinkedIn','Employees'];const rows=ar.map(p=>[p.name,p.title,p.organization_name||p.organization?.name||'',p.email||'',p.email_status||'',p.city||'',p.state||'',p.country||'',p.linkedin_url||'',p.num_employees||''].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));const csv=[h.join(','),...rows].join('\n');const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='founders.csv';a.click();URL.revokeObjectURL(url);toast('success','CSV Exported',`${ar.length} contacts`,2400);}
+
+/* ─── HISTORY ─── */
+function saveHist2(e){const h=gs('history',[]);h.unshift(e);ss('history',h.slice(0,20));}
+function renderHist(){
+  const h=gs('history',[]),list=document.getElementById('hl'),emp=document.getElementById('he');list.innerHTML='';
+  if(!h.length){emp.classList.add('show');return;}emp.classList.remove('show');
+  h.forEach((item,i)=>{
+    const q=[item.industry,item.location].filter(Boolean).join(' · ')||'General search';
+    const card=document.createElement('div');card.className='hc';
+    card.innerHTML=`<div style="font-size:18px;">🔍</div><div class="hi"><div class="hq">${esc(q)}</div><div class="hm">${item.roles?.join(', ')||''} · ${item.total?.toLocaleString()||'?'} results · ${tAgo(item.date)}</div></div><button class="hdel" onclick="delH(${i},event)">🗑</button>`;
+    card.onclick=(e)=>{if(e.target.closest('.hdel'))return;document.getElementById('s-ind').value=item.industry||'';document.getElementById('s-loc').value=item.location||'';goPage('search');toast('info','Filters Loaded','Hit Search Apollo again',2000);};
+    list.appendChild(card);
+  });
+}
+function delH(i,e){e.stopPropagation();const h=gs('history',[]);h.splice(i,1);ss('history',h);renderHist();toast('info','Removed','',1500);}
+function clearHist(){ss('history',[]);renderHist();toast('info','History Cleared','',1800);}
+function tAgo(ts){const d=(Date.now()-ts)/1000;if(d<60)return'just now';if(d<3600)return`${Math.floor(d/60)}m ago`;if(d<86400)return`${Math.floor(d/3600)}h ago`;return`${Math.floor(d/86400)}d ago`;}
+
+/* ─── DASHBOARD ─── */
+function renderDash(){
+  const h=gs('history',[]),leads=gs('leads',[]);
+  const contacted=leads.filter(l=>l.status!=='not-contacted').length,replied=leads.filter(l=>['replied','meeting','closed'].includes(l.status)).length;
+  const stats=[{n:h.length,l:'Searches',c:'var(--acc)'},{n:leads.length,l:'Leads',c:'var(--blu)'},{n:contacted,l:'Contacted',c:'var(--ylw)'},{n:replied,l:'Replied',c:'var(--grn)'},{n:leads.filter(l=>l.email).length,l:'With Email',c:'var(--pur)'},{n:h.reduce((a,s)=>a+(s.total||0),0).toLocaleString(),l:'Total Found',c:'var(--mt2)'}];
+  document.getElementById('sg').innerHTML=stats.map(s=>`<div class="sc"><div class="sn" style="color:${s.c}">${s.n}</div><div class="sl2">${s.l}</div></div>`).join('');
+  const last7=h.slice(0,7).reverse(),bc=document.getElementById('bc');
+  if(!last7.length){bc.innerHTML='<div style="color:var(--mt);font-size:12px;padding:14px;">No searches yet</div>';return;}
+  const max=Math.max(...last7.map(s=>s.total||1),1);
+  bc.innerHTML=last7.map(s=>`<div class="bcol"><div class="bar" style="height:${Math.max(4,Math.round(((s.total||0)/max)*76))}px;" title="${s.total||0}"></div><div class="blbl">${esc((s.industry||s.location||'?').slice(0,7))}</div></div>`).join('');
+  const counts={};h.forEach(s=>{if(s.industry)counts[s.industry]=(counts[s.industry]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6),mc=sorted[0]?.[1]||1;
+  document.getElementById('ib2').innerHTML=sorted.length?sorted.map(([k,v])=>`<div class="irow"><div class="inm">${esc(k)}</div><div class="ibw"><div class="ib2" style="width:${Math.round((v/mc)*100)}%"></div></div><div class="ic">${v}</div></div>`).join(''):`<div style="color:var(--mt);font-size:13px;">No data yet — run some searches!</div>`;
+}
+
+/* ─── TRACKER ─── */
+const SO=[{v:'not-contacted',l:'Not Contacted',b:'bm'},{v:'contacted',l:'Contacted',b:'bb'},{v:'replied',l:'Replied',b:'by'},{v:'meeting',l:'Meeting Booked',b:'bp2'},{v:'closed',l:'Closed Won',b:'bg'},{v:'not-interested',l:'Not Interested',b:'br'}];
+function saveTrack(p){const leads=gs('leads',[]);if(leads.find(l=>l.id===p.id||(l.email&&l.email===p.email))){toast('warning','Already Tracked',`${p.name} is in your tracker`);return;}leads.unshift({id:p.id||Date.now().toString(),name:p.name,title:p.title,company:p.organization_name,email:p.email,linkedin:p.linkedin_url,location:[p.city,p.country].filter(Boolean).join(', '),status:'not-contacted',note:'',savedAt:Date.now()});ss('leads',leads);updBadge();toast('success','Lead Saved',`${p.name} added ✓`);}
+function addLead(){const name=document.getElementById('aln').value.trim();if(!name){toast('warning','Name Required','');return;}const leads=gs('leads',[]);leads.unshift({id:Date.now().toString(),name,title:document.getElementById('alr').value.trim(),company:document.getElementById('alc').value.trim(),email:document.getElementById('ale').value.trim(),linkedin:'',location:'',status:'not-contacted',note:'',savedAt:Date.now()});ss('leads',leads);['aln','alr','alc','ale'].forEach(id=>document.getElementById(id).value='');togAdd();renderTracker();updBadge();toast('success','Lead Added',name);}
+function togAdd(){const f=document.getElementById('af'),t=document.getElementById('atog');f.classList.toggle('show');t.classList.toggle('open');}
+function renderTracker(){
+  const leads=gs('leads',[]),q=document.getElementById('tq').value.toLowerCase(),filter=document.getElementById('tf').value,list=document.getElementById('tl'),emp=document.getElementById('te');
+  document.getElementById('tcc').textContent=`${leads.length} leads`;
+  let f2=leads;if(q)f2=f2.filter(l=>(l.name+l.company+l.email+l.title).toLowerCase().includes(q));if(filter)f2=f2.filter(l=>l.status===filter);
+  list.innerHTML='';if(!f2.length){emp.classList.add('show');return;}emp.classList.remove('show');
+  f2.forEach(lead=>{const so=SO.find(s=>s.v===lead.status)||SO[0];const card=document.createElement('div');card.className='lcard';
+    card.innerHTML=`<div class="ltop"><div><div class="ln">${esc(lead.name)}</div><div class="lr2">${esc(lead.title||'')}</div><div class="lco">${esc(lead.company||'')}${lead.location?' · '+esc(lead.location):''}</div></div><div class="lacts"><select class="ssel" onchange="updStat('${lead.id}',this.value)">${SO.map(s=>`<option value="${s.v}"${s.v===lead.status?' selected':''}>${s.l}</option>`).join('')}</select><button class="btn bg2b bsm" onclick="preFill('${esc(lead.name)}','${esc(lead.company||'')}','${esc(lead.title||'')}')">✉</button><button class="btn bda bsm" onclick="delLead('${lead.id}')">✕</button></div></div><div class="chips">${lead.email?`<div class="chip e" onclick="cpChip('${esc(lead.email)}',this)">✉ ${esc(lead.email)}</div>`:'<div class="chip" style="color:var(--mt)">No email</div>'}${lead.linkedin?`<div class="chip"><a href="${esc(lead.linkedin)}" target="_blank">in ↗</a></div>`:''}<span class="badge ${so.b}">${so.l}</span></div><textarea class="lnote" placeholder="Add a note..." onchange="updNote('${lead.id}',this.value)">${esc(lead.note||'')}</textarea>`;
+    list.appendChild(card);});
+}
+function updStat(id,status){const leads=gs('leads',[]);const l=leads.find(x=>x.id===id);if(l){l.status=status;ss('leads',leads);toast('info','Updated',`${l.name} → ${SO.find(s=>s.v===status)?.l||status}`,1600);renderTracker();}}
+function updNote(id,note){const leads=gs('leads',[]);const l=leads.find(x=>x.id===id);if(l){l.note=note;ss('leads',leads);}}
+function delLead(id){const leads=gs('leads',[]);const i=leads.findIndex(l=>l.id===id);if(i>-1){const n=leads[i].name;leads.splice(i,1);ss('leads',leads);renderTracker();updBadge();toast('info','Removed',n,1800);}}
+function updBadge(){const leads=gs('leads',[]);const b=document.getElementById('sbc');if(b){b.style.display=leads.length?'inline':'none';b.textContent=leads.length;}}
+function preFill(n,c,r){document.getElementById('en').value=n;document.getElementById('ec').value=c;document.getElementById('er').value=r;goPage('email');toast('info','Prefilled',`Ready for ${n}`,1800);}
+
+/* ─── EMAIL AI ─── */
+let selTpl='partnership';
+function selT(el){document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selTpl=el.dataset.t;}
+async function genEmail(){
+  const n=document.getElementById('en').value.trim(),c=document.getElementById('ec').value.trim(),r=document.getElementById('er').value.trim(),s=document.getElementById('es').value.trim(),g2=document.getElementById('eg').value.trim(),tone=getA('toneTags')[0]||'Professional';
+  if(!g2){toast('warning','Missing Goal','Describe what you want to achieve.');return;}
+  const btn=document.getElementById('gbtn');btn.disabled=true;btn.textContent='✦ Generating…';
+  const ctx={partnership:'Propose a partnership or collaboration',service:'Pitch a product or service',investor:'Reach out as an investor',intro:'Warm cold introduction'}[selTpl];
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'Expert cold email copywriter. Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.',messages:[{role:'user',content:`Write a ${tone} cold email.\nTo: ${n||'Founder'}${r?' ('+r+')':''}${c?', '+c:''}\nFrom: ${s||'[Your Name]'}\nType: ${ctx}\nGoal: ${g2}\nMax 170 words, no generic openers, human feel, specific CTA`}]})});
+    const data=await res.json();const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    let parsed=null;try{const m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
+    if(parsed?.subject&&parsed?.body){document.getElementById('esub').textContent=parsed.subject;document.getElementById('ebo').textContent=parsed.body;const box=document.getElementById('eo');box.classList.add('show');box.scrollIntoView({behavior:'smooth',block:'start'});toast('success','Email Ready',`For ${n||'your lead'} ✉`,2800);}
+    else toast('error','Failed','Could not generate. Try again.');
+  }catch(e){console.error(e);toast('error','Error','Check your connection.');}
+  btn.disabled=false;btn.innerHTML='✦ Generate Email';
+}
+function cpEmail(){const b=document.getElementById('ebo').textContent;if(!b)return;navigator.clipboard.writeText(b).then(()=>toast('copy','Email Copied','',2000));}
+function cpSubj(){const s=document.getElementById('esub').textContent;if(!s)return;navigator.clipboard.writeText(s).then(()=>toast('copy','Subject Copied','',2000));}
+function openMail(){const s=encodeURIComponent(document.getElementById('esub').textContent||''),b=encodeURIComponent(document.getElementById('ebo').textContent||'');window.open(`mailto:?subject=${s}&body=${b}`,'_blank');toast('info','Opening Mail…','',1800);}
+
+/* ─── PROFILES ─── */
+function getProfiles(){return gg('profiles',[{id:'default',name:'My Account',role:'Admin',color:'#e8420a'}]);}
+function setProfiles(p){sg('profiles',p);}
+function renderProfiles(){
+  const profiles=getProfiles(),active=acp();
+  document.getElementById('pl').innerHTML=profiles.map(p=>`<div class="pitem"><div class="pav" style="background:${p.color||'#e8420a'}">${p.name[0].toUpperCase()}</div><div class="pni2"><div class="pnm">${esc(p.name)}</div><div class="ptg">${esc(p.role||'')}${p.id===active?' · Active':''}</div></div>${p.id!=='default'?`<button class="btn bda bsm" onclick="delProfile('${p.id}')">Remove</button>`:''}</div>`).join('');
+  const sel=document.getElementById('pswitch');sel.innerHTML=profiles.map(p=>`<option value="${p.id}"${p.id===active?' selected':''}>${esc(p.name)}</option>`).join('');
+  updSideProf();
+}
+function addProfile(){const name=document.getElementById('npn').value.trim();if(!name){toast('warning','Name Required','');return;}const role=document.getElementById('npr').value.trim();const profiles=getProfiles();const colors=['#e8420a','#22c55e','#60a5fa','#a78bfa','#fbbf24','#f87171'];profiles.push({id:'p_'+Date.now(),name,role,color:colors[profiles.length%colors.length]});setProfiles(profiles);document.getElementById('npn').value='';document.getElementById('npr').value='';renderProfiles();toast('success','Profile Added',name,2200);}
+function delProfile(id){if(id===acp()){toast('error','Cannot Delete','Switch profile first.');return;}setProfiles(getProfiles().filter(p=>p.id!==id));renderProfiles();toast('info','Removed','',1600);}
+function switchProfile(id){localStorage.setItem('ft_ap',id);updSideProf();renderTracker();updBadge();const p=getProfiles().find(x=>x.id===id);toast('info','Switched',`Now: ${p?.name||'?'}`,2000);}
+function updSideProf(){const p=getProfiles().find(x=>x.id===acp())||{name:'My Account',role:'Admin',color:'#e8420a'};const av=document.getElementById('sav'),nm=document.getElementById('snm'),tg=document.getElementById('stg');if(av){av.textContent=p.name[0].toUpperCase();av.style.background=p.color||'#e8420a';}if(nm)nm.textContent=p.name;if(tg)tg.textContent=p.role||'Click to manage';}
+
+/* ─── DATA ─── */
+function exportAll(){const data={profiles:getProfiles(),leads:gs('leads',[]),history:gs('history',[])};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='foundertrace_backup.json';a.click();URL.revokeObjectURL(url);toast('success','Exported','Backup downloaded',2200);}
+function clearAll(){if(!confirm('Clear ALL data? Cannot be undone.'))return;Object.keys(localStorage).filter(k=>k.startsWith('ft')||k.startsWith('ftg')).forEach(k=>localStorage.removeItem(k));toast('info','Cleared','Reloading…',1800);setTimeout(()=>location.reload(),1400);}
+
+/* ─── PWA ─── */
+let dp=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;if(!localStorage.getItem('ft_idb'))document.getElementById('ibnr').classList.add('show');});
+const iBtn=document.getElementById('ibtn');
+if(iBtn)iBtn.onclick=async()=>{if(!dp)return;dp.prompt();const{outcome}=await dp.userChoice;if(outcome==='accepted')toast('success','Installed!','App added to your device 🎉',3500);dp=null;document.getElementById('ibnr').classList.remove('show');};
+function dismissI(){localStorage.setItem('ft_idb','1');document.getElementById('ibnr').classList.remove('show');}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
+
+/* ─── UTILS ─── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ─── INIT ─── */
+updBadge();
+updSideProf();
+loadPrefs();
+updateKeyUI();
+</script>
+</body>
+</html>
