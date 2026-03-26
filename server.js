@@ -67,4 +67,4 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`FounderTrace running on port ${PORT}`);
 });
-  
+
