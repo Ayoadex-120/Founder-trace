@@ -15,17 +15,26 @@ app.post('/api/apollo/search', async (req, res) => {
   if (!apiKey) return res.status(400).json({ error: 'No API key provided' });
 
   try {
-    const response = await fetch('https://api.apollo.io/api/v1/mixed_people/search', {
+    const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
         'X-Api-Key': apiKey
       },
       body: JSON.stringify(req.body)
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
+    const text = await response.text();
+    console.log('Apollo response status:', response.status);
+    console.log('Apollo response body:', text.slice(0, 300));
+    try {
+      const data = JSON.parse(text);
+      res.status(response.status).json(data);
+    } catch(e) {
+      res.status(500).json({ error: 'Invalid JSON from Apollo', raw: text.slice(0, 300) });
+    }
   } catch (err) {
+    console.error('Apollo fetch error:', err.message);
     res.status(500).json({ error: 'Apollo request failed', detail: err.message });
   }
 });
@@ -36,16 +45,23 @@ app.post('/api/apollo/test', async (req, res) => {
   if (!apiKey) return res.status(400).json({ error: 'No API key provided' });
 
   try {
-    const response = await fetch('https://api.apollo.io/api/v1/mixed_people/search', {
+    const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
         'X-Api-Key': apiKey
       },
-      body: JSON.stringify({ per_page: 1, page: 1, person_seniorities: ['owner'] })
+      body: JSON.stringify({ per_page: 1, page: 1 })
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
+    const text = await response.text();
+    console.log('Apollo test status:', response.status, text.slice(0, 200));
+    try {
+      const data = JSON.parse(text);
+      res.status(response.status).json(data);
+    } catch(e) {
+      res.status(500).json({ error: 'Invalid JSON from Apollo', raw: text.slice(0, 300) });
+    }
   } catch (err) {
     res.status(500).json({ error: 'Apollo request failed', detail: err.message });
   }
@@ -67,4 +83,3 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`FounderTrace running on port ${PORT}`);
 });
-
