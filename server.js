@@ -15,21 +15,32 @@ app.post('/api/apollo/search', async (req, res) => {
   if (!apiKey) return res.status(400).json({ error: 'No API key provided' });
 
   try {
-    const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
+    // Build query string from body params
+    const params = new URLSearchParams();
+    const body = req.body;
+    if (body.person_titles) body.person_titles.forEach(t => params.append('person_titles[]', t));
+    if (body.person_locations) body.person_locations.forEach(l => params.append('person_locations[]', l));
+    if (body.person_seniorities) body.person_seniorities.forEach(s => params.append('person_seniorities[]', s));
+    if (body.organization_num_employees_ranges) body.organization_num_employees_ranges.forEach(r => params.append('organization_num_employees_ranges[]', r));
+    if (body.q_keywords) params.append('q_keywords', body.q_keywords);
+    if (body.page) params.append('page', body.page);
+    if (body.per_page) params.append('per_page', body.per_page);
+
+    const url = `https://api.apollo.io/api/v1/mixed_people/api_search?${params.toString()}`;
+    console.log('Apollo URL:', url);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
-        'X-Api-Key': apiKey
-      },
-      body: JSON.stringify(req.body)
+        'x-api-key': apiKey
+      }
     });
     const text = await response.text();
-    console.log('Apollo response status:', response.status);
-    console.log('Apollo response body:', text.slice(0, 300));
+    console.log('Apollo status:', response.status, text.slice(0, 300));
     try {
-      const data = JSON.parse(text);
-      res.status(response.status).json(data);
+      res.status(response.status).json(JSON.parse(text));
     } catch(e) {
       res.status(500).json({ error: 'Invalid JSON from Apollo', raw: text.slice(0, 300) });
     }
@@ -45,22 +56,20 @@ app.post('/api/apollo/test', async (req, res) => {
   if (!apiKey) return res.status(400).json({ error: 'No API key provided' });
 
   try {
-    const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
+    const response = await fetch('https://api.apollo.io/api/v1/mixed_people/api_search?per_page=1', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
-        'X-Api-Key': apiKey
-      },
-      body: JSON.stringify({ per_page: 1, page: 1 })
+        'x-api-key': apiKey
+      }
     });
     const text = await response.text();
     console.log('Apollo test status:', response.status, text.slice(0, 200));
     try {
-      const data = JSON.parse(text);
-      res.status(response.status).json(data);
+      res.status(response.status).json(JSON.parse(text));
     } catch(e) {
-      res.status(500).json({ error: 'Invalid JSON from Apollo', raw: text.slice(0, 300) });
+      res.status(500).json({ error: 'Invalid JSON', raw: text.slice(0, 300) });
     }
   } catch (err) {
     res.status(500).json({ error: 'Apollo request failed', detail: err.message });
